@@ -71,10 +71,30 @@ func partOne(xmasMap [][]string) int {
   return res 
 }
 
+
+func partTwo(xmasMap [][]string) int{
+  res := 0
+  for y := 1; y < len(xmasMap) - 1; y++ {
+    for x := 1; x < len(xmasMap[y]) - 1; x++ {
+      if xmasMap[y][x] == "A" {
+        if (xmasMap[y-1][x-1] == "M" &&  xmasMap[y-1][x+1] == "M" &&  xmasMap[y+1][x-1] == "S" && xmasMap[y+1][x+1] == "S") || 
+        (xmasMap[y-1][x-1] == "M" &&  xmasMap[y-1][x+1] == "S" &&  xmasMap[y+1][x-1] == "M" && xmasMap[y+1][x+1] == "S") || 
+        (xmasMap[y-1][x-1] == "S" &&  xmasMap[y-1][x+1] == "M" &&  xmasMap[y+1][x-1] == "S" && xmasMap[y+1][x+1] == "M") || 
+        (xmasMap[y-1][x-1] == "S" &&  xmasMap[y-1][x+1] == "S" &&  xmasMap[y+1][x-1] == "M" && xmasMap[y+1][x+1] == "M") {
+          res++
+        }
+      }
+    }
+  }
+  return res
+}
+
 func main() {
   xmasMapTest := getMap("./day4/test.txt")
   fmt.Println(partOne(xmasMapTest))
+  fmt.Println(partTwo(xmasMapTest))
   xmasMap := getMap("./day4/input.txt")
   fmt.Println(partOne(xmasMap))
+  fmt.Println(partTwo(xmasMap))
   return 
 }
