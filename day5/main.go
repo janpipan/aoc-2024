@@ -55,41 +55,56 @@ func getPages(fileName string) (map[int]map[int]struct{}, [][]int){
   return order, update 
 }
 
-
-func partOne(order map[int]map[int]struct{}, update [][]int) int {
-  res := 0
-
-  for _, line := range update {
-    stack := []int{}
-    good := true
-    for _, v := range line {
-      stack = append(stack, v)
-      if !good {
-        break
-      }
-      for _, s := range stack {
-        if _, ok := order[v][s]; ok {
-          good = false
-          break
-        }
+func isCorrect(order map[int]map[int]struct{}, page []int) (bool, int, int) {
+  stack := []int{}
+  for iv, v := range page {
+    stack = append(stack, v)
+    for is, s := range stack {
+      if _, ok := order[v][s]; ok {
+        return false, iv, is
       }
     }
+  }
+  return true, -1, -1
+}
+
+
+func partOne(order map[int]map[int]struct{}, update [][]int) (int, [][]int) {
+  res := 0
+  inc := [][]int{}
+
+  for _, line := range update {
+    good, _, _ := isCorrect(order, line)
     if good {
       res += line[int(len(line)/2)]
+    } else {
+      inc = append(inc, line)
     }
   }
   
-  return res
+  return res, inc
 }
 
+func partTwo(order map[int]map[int]struct{}, incorrect [][]int) int {
+  res := 0
+  for _, line := range incorrect {
+    for correct, iv, is := isCorrect(order, line); !correct; correct, iv, is = isCorrect(order, line) {
+      line[iv], line[is] = line[is], line[iv]
+    }
+    res += line[int(len(line)/2)]
+  }
+  return res 
+}
 
 
 func main() {
   order, update := getPages("./day5/test.txt")
-  fmt.Println(order)
-  fmt.Println(update)
-  fmt.Println(partOne(order, update))
+  resTest, incorrectTest := partOne(order, update)
+  fmt.Println("Result part one test:", resTest)
+  fmt.Println("Result part two:", partTwo(order, incorrectTest))
   orderInput, updateInput := getPages("./day5/input.txt")
-  fmt.Printf("Puzzle result: %d", partOne(orderInput, updateInput))
+  resPartOne, incorrect := partOne(orderInput, updateInput)
+  fmt.Printf("Puzzle result: %d\n", resPartOne)
+  fmt.Println("Result part two:", partTwo(orderInput, incorrect))
   return
 }
