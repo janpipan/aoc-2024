@@ -50,7 +50,7 @@ func getTrailMap(filename string) ([][]int, map[Position]struct{}) {
   return trailMap, trailheads
 }
 
-func getTrailheadsScore(pos Position, trailMap [][]int) int {
+func getTrailheadsScoreAndRating(pos Position, trailMap [][]int) (int, int) {
   directions := []Position{
     {0,1},
     {-1,0},
@@ -58,7 +58,8 @@ func getTrailheadsScore(pos Position, trailMap [][]int) int {
     {0,-1},
   }
   stack := []Position{pos}
-  heads := map[Position]struct{}{} 
+  score := map[Position]struct{}{} 
+  rating := 0
   yMax, xMax := len(trailMap), len(trailMap[0])
   for len(stack) > 0 {
     curr := stack[len(stack)-1]
@@ -67,7 +68,8 @@ func getTrailheadsScore(pos Position, trailMap [][]int) int {
       continue
     }
     if trailMap[curr.y][curr.x] == 9 {
-      heads[Position{curr.y,curr.x}] = struct{}{}
+      rating += 1
+      score[Position{curr.y,curr.x}] = struct{}{}
     }
     for _, direction := range directions {
       neigh := Position{curr.y+direction.y, curr.x+direction.x}
@@ -76,22 +78,23 @@ func getTrailheadsScore(pos Position, trailMap [][]int) int {
       }
     }
   }
-  return len(heads) 
+  return len(score), rating 
 }
 
-func partOne(filename string) int {
+func partOneAndTwo(filename string) (int, int) {
   trailMap, trailheads := getTrailMap(filename)
-  res := 0
+  resPartOne, resPartTwo := 0, 0
 
   for k := range trailheads {
-    res += getTrailheadsScore(k, trailMap)
+    score, rating := getTrailheadsScoreAndRating(k, trailMap)
+    resPartOne += score 
+    resPartTwo += rating
   }
-  return res
+  return resPartOne, resPartTwo
 }
 
 func main() {
-  fmt.Println(getTrailMap("./day10/test.txt"))
-  fmt.Println(partOne("./day10/test.txt"))
-  fmt.Println(partOne("./day10/input.txt"))
+  fmt.Println(partOneAndTwo("./day10/test.txt"))
+  fmt.Println(partOneAndTwo("./day10/input.txt"))
   return
 }
