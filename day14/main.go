@@ -40,7 +40,7 @@ func getInput(filename string) []Robot {
 }
 
 
-func simulate(robot Robot, yMax, xMax, times int) int {
+func simulate(robot Robot, yMax, xMax, times int) Robot {
   for i := 0; i < times; i++ {
     dy, dx := robot.y + robot.yvel, robot.x + robot.xvel
     if dy < 0 {
@@ -54,6 +54,10 @@ func simulate(robot Robot, yMax, xMax, times int) int {
       robot.x = dx % xMax
     }
   }
+  return robot
+}
+
+func getQuadrant(robot Robot, yMax, xMax int) int {
   ybound := (yMax - 1) / 2
   xbound := (xMax - 1) / 2 
   if robot.y < ybound && robot.x < xbound {
@@ -77,7 +81,7 @@ func partOne(filename string, yMax, xMax, times int) int {
     4: 0,
   }
   for _, robot := range robots {
-    counter[simulate(robot, yMax, xMax, times)]++ 
+    counter[getQuadrant(simulate(robot, yMax, xMax, times), yMax, xMax)]++ 
   }
   res := 1
   fmt.Println(counter)
@@ -89,8 +93,33 @@ func partOne(filename string, yMax, xMax, times int) int {
   return res
 }
 
+type Pos struct {
+  y int
+  x int
+}
+
+func partTwo(filename string, yMax, xMax int) int {
+  robots := getInput(filename)
+  for i := 0; i < 20000; i++ {
+    seen := map[Pos]struct{}{}
+    for _, robot := range robots {
+      s := simulate(robot, yMax, xMax, i)
+      p := Pos{s.y, s.x}
+      if _, ok := seen[p]; ok{
+        continue
+      }
+      seen[p] = struct{}{}
+    }
+    if len(seen) == len(robots){
+      return i
+    }
+  }
+  return 0 
+}
+
 func main() {
   fmt.Println(partOne("./day14/test.txt", 7, 11, 100))
   fmt.Println(partOne("./day14/input.txt", 103,101, 100))  
+  fmt.Println(partTwo("./day14/input.txt", 103,101))
   return 
 }
