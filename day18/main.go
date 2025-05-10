@@ -82,13 +82,48 @@ func partOne(filename string, x, y, steps int) int{
       q = append(q, pos)
     }
   }
-
-  
   return m 
+}
+
+func isConnected(positions []Position, x, y, steps int) bool {
+  byteMap := makeMap(positions, x, y, steps)
+  q := []Position{{0,0}}
+  seen := map[Position]struct{}{}
+
+  for len(q) > 0 {
+    curr := q[0]
+    q = q[1:]
+    for _, pos := range []Position{{curr.y, curr.x+1}, {curr.y+1,curr.x}, {curr.y, curr.x-1}, {curr.y-1,curr.x}} {
+      if pos.y < 0 || pos.y >= len(byteMap) || pos.x < 0 || pos.x >= len(byteMap[0]) { continue }
+      if byteMap[pos.y][pos.x] == 1 { continue }
+      if _, ok := seen[pos]; ok { continue }
+      if pos.y == len(byteMap) - 1 && pos.x == len(byteMap[0]) - 1 { return true}
+      seen[pos] = struct{}{}
+      q = append(q, pos)
+    }
+  }
+  return false 
+}
+
+func partTwo(filename string, x, y, start int) Position {
+  positions := getInput(filename)
+  end := len(positions)
+  for start < end {
+    mid := int((start + end) / 2)
+    r := isConnected(positions, x, y, mid+1)
+    if r {
+      start = mid + 1 
+    } else {
+      end = mid 
+    }
+  }
+  return positions[start] 
 }
 
 func main() {
   fmt.Println(partOne("./day18/test.txt", 7, 7, 12))
   fmt.Println(partOne("./day18/input.txt", 71, 71, 1024))
+  fmt.Println(partTwo("./day18/test.txt", 7, 7, 12))
+  fmt.Println(partTwo("./day18/input.txt", 71, 71, 1024))
   return 
 }
