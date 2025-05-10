@@ -55,8 +55,34 @@ func partOne(filename string) int {
   return res 
 }
 
+var cache = map[string]int{}
+func isPossibleTwo(pattern string, towels map[string]struct{}) int {
+  if pattern == "" { return 1 }
+  if val, ok := cache[pattern]; ok { return val }
+  count := 0
+  for i := 1; i < len(pattern)+1; i++ {
+    if _, ok := towels[pattern[:i]]; ok {
+      r := isPossibleTwo(pattern[i:], towels)
+      count += r 
+      if r > 0 { cache[pattern] += r} 
+    }
+  }
+  return count 
+}
+
+func partTwo(filename string) int {
+  towels, patterns := getInput(filename)
+  res := 0
+  for _, pattern := range patterns {
+    res += isPossibleTwo(pattern, towels)
+  }
+  return res 
+}
+
 func main() {
   fmt.Println(partOne("./day19/test.txt"))
   fmt.Println(partOne("./day19/input.txt"))
+  //fmt.Println(partTwo("./day19/test.txt"))
+  fmt.Println(partTwo("./day19/input.txt"))
   return 
 }
