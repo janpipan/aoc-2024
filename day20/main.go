@@ -89,14 +89,38 @@ func savings(racetrack *[][]int) int {
 
 func partOne(filename string) int {
   racetrack, start := getInput(filename)
-  //printRacetrack(racetrack)
   calculateCost(&racetrack, start)
-  //printRacetrack(racetrack)
   return savings(&racetrack) 
 }
 
+func savingsTwo(racetrack *[][]int) int {
+  res := 0
+  for i := range len(*racetrack) {
+    for j := range len((*racetrack)[i]) {
+      if (*racetrack)[i][j] == -2 { continue }
+      for radius := 2; radius < 21; radius++ {
+        for dr := 0; dr < radius + 1; dr++ {
+          dc := radius - dr
+          for pos := range map[Position]struct{}{{i + dr, j + dc}:struct{}{}, {i + dr, j - dc}:struct{}{}, {i - dr, j + dc}:struct{}{}, {i - dr, j - dc}:struct{}{}} {
+            if pos.y < 0 || pos.x < 0 || pos.y >= len(*racetrack) || pos.x >= len((*racetrack)[i]) { continue }
+            if (*racetrack)[pos.y][pos.x] == -2 { continue }
+            if ((*racetrack)[i][j] - (*racetrack)[pos.y][pos.x]) >= (100 + radius) { res++ } 
+          }
+        }
+      }
+    }
+  }
+  return res 
+}
+
+func partTwo(filename string) int {
+  racetrack, start := getInput(filename)
+  calculateCost(&racetrack, start)
+  return savingsTwo(&racetrack) 
+}
 func main() {
-  fmt.Println(partOne("./day20/test.txt"))
-  fmt.Println(partOne("./day20/input.txt"))
+  //fmt.Println(partOne("./day20/test.txt"))
+  //fmt.Println(partOne("./day20/input.txt"))
+  fmt.Println(partTwo("./day20/input.txt"))
   return
 }
