@@ -41,20 +41,19 @@ type Combination struct {
   sequence string
 }
 
-var num_keypad [][]string = [][]string{
+var numKeypad [][]string = [][]string{
   {"7", "8", "9"},
   {"4", "5", "6"},
   {"1", "2", "3"},
   {"-1", "0", "A"},
 }
 
-var dir_keypad [][]string = [][]string{
+var dirKeypad [][]string = [][]string{
   {"-1", "^", "A"},
   {"<", "v", ">"},
 }
 
-func solve(input string, keypad [][]string) []string {
-  //fmt.Println(input)
+func computeSequences(keypad [][]string) map[Position][]string {
   pos := map[string]Coordinate{} 
   for i := range keypad {
     for j := range keypad[i] {
@@ -98,7 +97,11 @@ func solve(input string, keypad [][]string) []string {
       seqs[Position{p1,p2}] = possibilities
     }
   }
-  return combs(seqs, input) 
+  return seqs
+}
+
+func solve(input string, sequences map[Position][]string) []string {
+  return combs(sequences, input) 
 }
 
 func combs(sequences map[Position][]string, input string) []string {
@@ -131,14 +134,16 @@ func combs(sequences map[Position][]string, input string) []string {
 func partOne(filename string) int {
   input := getInput(filename)
   res := 0
+  numSequences := computeSequences(numKeypad)
+  dirSequences := computeSequences(dirKeypad)
   for _, i := range input {
-    firstRobot := solve(i, num_keypad)
+    firstRobot := solve(i, numSequences)
     //fmt.Println(firstRobot)
     m := math.MaxInt
     m2 := math.MaxInt
     for _, sol := range firstRobot {
       //fmt.Println(sol)
-      secondRobot := solve(sol, dir_keypad)
+      secondRobot := solve(sol, dirSequences)
       for _, sol2 := range secondRobot {
         if len(sol2) < m {
           m = len(sol2)
@@ -146,7 +151,7 @@ func partOne(filename string) int {
       }
       for _, sol2 := range secondRobot {
         if len(sol2) == m {
-          person := solve(sol2, dir_keypad)
+          person := solve(sol2, dirSequences)
           for _, p := range person {
             if len(p) < m2 {
               m2 = len(p)
@@ -158,11 +163,84 @@ func partOne(filename string) int {
     num, _ := strconv.Atoi(i[:len(i)-1])
     res += m2 * num 
   }
+  return res
+}
+
+type CacheComb struct {
+  start string
+  end string
+  depth int
+}
+
+var cache = map[CacheComb]int{} 
+
+var numSequences = computeSequences(numKeypad)
+var dirSequences = computeSequences(dirKeypad)
+
+func recSolve(start, end string, depth, maxDepth int) int {
+  res := 0
+  if val, ok := cache[CacheComb{start,end,depth}]; ok {
+    return val
+  }
+  if depth == maxDepth {
+    seqs := dirSequences[Position{start,end}]
+    m := math.MaxInt
+    for _, seq := range seqs {
+      m = min(m, len(seq))
+    }
+    return m
+  } else if depth == 1 {
+    seqs := numSequences[Position{start,end}]
+    m := math.MaxInt
+    for _, seq := range seqs {
+      sum := 0
+      seq = "A" + seq
+      for i := 0; i < len(seq) -1; i++ {
+        sum += recSolve(string(seq[i]), string(seq[i+1]), depth+1, maxDepth)
+      }
+      m = min(m, sum)
+    }
+    return m
+  } else { 
+    seqs := dirSequences[Position{start,end}]
+    m := math.MaxInt
+    for _, seq := range seqs {
+      sum := 0 
+      seq = "A" + seq
+      for i := 0; i < len(seq) - 1; i++ {
+        sum += recSolve(string(seq[i]), string(seq[i+1]), depth+1, maxDepth)
+      }
+      m = min(m, sum)
+    }
+    res = m
+  }
+  cache[CacheComb{start,end,depth}] = res
   return res 
 }
 
+func partTwo(filename string) int {
+  input := getInput(filename)
+  result := 0
+  
+  for _, inp := range input {
+    num, _ := strconv.Atoi(inp[:len(inp)-1])
+    inp = "A" + inp 
+    res := 0
+    for i := 0; i < len(inp) - 1; i++ {
+      r := recSolve(string(inp[i]), string(inp[i+1]), 1, 26)
+      res += r 
+    }
+    result += res * num 
+  }
+  return result
+}
+
+
+
+
 func main() {
-  fmt.Println(partOne("./day21/test.txt"))
-  fmt.Println(partOne("./day21/input.txt"))
+  //fmt.Println(partOne("./day21/test.txt"))
+  //fmt.Println(partOne("./day21/input.txt"))
+  fmt.Println(partTwo("./day21/input.txt"))
   return
 }
