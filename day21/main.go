@@ -182,32 +182,24 @@ func recSolve(start, end string, depth, maxDepth int) int {
   if val, ok := cache[CacheComb{start,end,depth}]; ok {
     return val
   }
+  var seqs []string
+  if depth == 1 {
+    seqs = numSequences[Position{start,end}]
+  } else {
+    seqs = dirSequences[Position{start,end}]
+  }
   if depth == maxDepth {
-    seqs := dirSequences[Position{start,end}]
     m := math.MaxInt
     for _, seq := range seqs {
       m = min(m, len(seq))
     }
     return m
-  } else if depth == 1 {
-    seqs := numSequences[Position{start,end}]
+  } else { 
     m := math.MaxInt
     for _, seq := range seqs {
       sum := 0
       seq = "A" + seq
       for i := 0; i < len(seq) -1; i++ {
-        sum += recSolve(string(seq[i]), string(seq[i+1]), depth+1, maxDepth)
-      }
-      m = min(m, sum)
-    }
-    return m
-  } else { 
-    seqs := dirSequences[Position{start,end}]
-    m := math.MaxInt
-    for _, seq := range seqs {
-      sum := 0 
-      seq = "A" + seq
-      for i := 0; i < len(seq) - 1; i++ {
         sum += recSolve(string(seq[i]), string(seq[i+1]), depth+1, maxDepth)
       }
       m = min(m, sum)
@@ -239,8 +231,9 @@ func partTwo(filename string) int {
 
 
 func main() {
-  //fmt.Println(partOne("./day21/test.txt"))
-  //fmt.Println(partOne("./day21/input.txt"))
-  fmt.Println(partTwo("./day21/input.txt"))
+  fmt.Println("Part one test: ", partOne("./day21/test.txt"))
+  fmt.Println("Part one input: ", partOne("./day21/input.txt"))
+  fmt.Println("Part two test: ", partTwo("./day21/test.txt"))
+  fmt.Println("Part two input: :", partTwo("./day21/input.txt"))
   return
 }
